@@ -2,17 +2,13 @@ package com.flappier.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.Random;
@@ -20,7 +16,7 @@ import java.util.Random;
 public class Flapper extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture background;
-	//ShapeRenderer shapeRenderer;
+	ShapeRenderer shapeRenderer;
 
 	Texture[] birds;
 	int flapState = 0;
@@ -48,7 +44,9 @@ public class Flapper extends ApplicationAdapter {
 	Rectangle[] bottomTubeRectangles;
 	Texture gameOVer;
 	Texture playAgain;
-	boolean showTexture = true;
+	Texture playNew;
+//	Music happyMusic;
+
 
 	@Override
 	public void create () {
@@ -57,39 +55,30 @@ public class Flapper extends ApplicationAdapter {
 //
 //		// load the drop sound effect and the rain background "music"
 //		//fartSound = Gdx.audio.newSound(Gdx.files.internal("Quick Fart-SoundBible.com-655578646.mp3"));
-//		//happyMusic = Gdx.audio.newMusic(Gdx.files.internal("phineas-and-ferb-perry-the-platypus-theme-song.mp3"));
-//
-//		//happyMusic.setLooping(true);
-//		//happyMusic.play();
-//
-//		//camera
-//		camera = new OrthographicCamera();
-//		camera.setToOrtho(false, 800, 480);
-//
-//		bird = new Rectangle();
-//		bird.x = 190;
-//		bird.y = 140;
-//		bird.width = 190;
-//		bird.height = 140;
+//		happyMusic = Gdx.audio.newMusic(Gdx.files.internal("phineas-and-ferb-perry-the-platypus-theme-song.mp3"));
+//		happyMusic.setLooping(true);
+//		happyMusic.play();
+
 
 
 		batch = new SpriteBatch();
-		background = new Texture("bg.png");
+		background = new Texture("bg.jpg");
 		//shapeRenderer = new ShapeRenderer();
 		birdCircle = new Circle();
 		font = new BitmapFont();
 		font.setColor(Color.WHITE);
 		font.getData().setScale(10);
 		gameOVer = new Texture("game_over.png");
+		playNew = new Texture("play_em.png");
 		playAgain = new Texture("playbtn.png");
 
 		birds = new Texture[2];
-		birds[0] = new Texture("bird.png");
-		birds[1] = new Texture("bird2.png");
+		birds[0] = new Texture("bird_em.png");
+		birds[1] = new Texture("bird_em_jump.png");
 
 
-		topTube = new Texture("toptube.png");
-		bottomTube = new Texture("bottomtube.png");
+		topTube = new Texture("tube_em_top.png");
+		bottomTube = new Texture("tube_em_bot.png");
 		maxTubeOffset = Gdx.graphics.getHeight() / 2 - gap / 2 - 100;
 		randomGenerator = new Random();
 		distanceBetweenTubes = Gdx.graphics.getWidth() * 3 / 4;
@@ -119,60 +108,29 @@ public class Flapper extends ApplicationAdapter {
 
 	@Override
 	public void render () {
-//		ScreenUtils.clear(1, 0, 0, 1);
-//		camera.update();
-//		batch.setProjectionMatrix(camera.combined);
-//		batch.begin();
-//		batch.draw(birdTexture, bird.x, bird.y);
-//		batch.end();
-//
-//
-//		if(Gdx.input.isTouched()) {
-//			Vector3 touchPos = new Vector3();
-//			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-//			camera.unproject(touchPos);
-//			bird.y = touchPos.y - 140 / 2;
-//		}
-//
-//		if(bird.x < 0) bird.x = 0;
-//		if(bird.x > 800 - 190) bird.x = 800 - 190;
-
 		batch.begin();
 		batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+		batch.draw(playNew, Gdx.graphics.getWidth() / 2 - gameOVer.getWidth()/2, Gdx.graphics.getHeight() / 2 - gameOVer.getHeight()/2);
+
+
 		if (gameState == 1) {
-
 			if (tubeX[scoringTube] < Gdx.graphics.getWidth() / 2) {
-
 				score++;
-
 				Gdx.app.log("Score", String.valueOf(score));
-
 				if (scoringTube < numberOfTubes - 1) {
-
 					scoringTube++;
-
 				} else {
-
 					scoringTube = 0;
-
 				}
-
 			}
-
 			if (Gdx.input.justTouched()) {
-
-				velocity = -27;
-
+				velocity = -30;
 			}
-
 			for (int i = 0; i < numberOfTubes; i++) {
-
 				if (tubeX[i] < - topTube.getWidth()) {
-
 					tubeX[i] += numberOfTubes * distanceBetweenTubes;
 					tubeOffset[i] = (randomGenerator.nextFloat() - 0.5f) * (Gdx.graphics.getHeight() - gap - 200);
-
 				} else {
 
 					tubeX[i] = tubeX[i] - tubeVelocity;
@@ -192,6 +150,8 @@ public class Flapper extends ApplicationAdapter {
 
 				velocity = velocity + gravity;
 				birdY -= velocity;
+			}else if(birdY>Gdx.graphics.getHeight()){
+				gameState = 2;
 			}else {
 				gameState = 2;
 			}
@@ -199,7 +159,6 @@ public class Flapper extends ApplicationAdapter {
 		} else if (gameState == 0){
 
 			if (Gdx.input.justTouched()) {
-
 				gameState = 1;
 			}
 		}else if (gameState == 2) {
@@ -221,46 +180,36 @@ public class Flapper extends ApplicationAdapter {
 			}
 		}
 
-
-		if (flapState == 0) {
+		//bird animation
+		if (flapState == 0 && velocity < 0) {
 			flapState = 1;
-		} else {
+
+		} else if( velocity > 0){
 			flapState = 0;
 		}
-
-
 		batch.draw(birds[flapState], Gdx.graphics.getWidth() / 2 - birds[flapState].getWidth() / 2, birdY);
 		font.draw(batch, String.valueOf(score), 100, 200);
-
 		birdCircle.set(Gdx.graphics.getWidth() / 2, birdY + birds[flapState].getHeight() / 2, birds[flapState].getWidth() / 2);
 
-		//shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-		//shapeRenderer.setColor(Color.RED);
-		//shapeRenderer.circle(birdCircle.x, birdCircle.y, birdCircle.radius);
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		shapeRenderer.setColor(Color.RED);
+		shapeRenderer.circle(birdCircle.x, birdCircle.y, birdCircle.radius);
 
 		for (int i = 0; i < numberOfTubes; i++) {
 
-			//shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[i], topTube.getWidth(), topTube.getHeight());
-			//shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 - gap / 2 - bottomTube.getHeight() + tubeOffset[i], bottomTube.getWidth(), bottomTube.getHeight());
+			shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 + gap / 2 + tubeOffset[i], topTube.getWidth(), topTube.getHeight());
+			shapeRenderer.rect(tubeX[i], Gdx.graphics.getHeight() / 2 - gap / 2 - bottomTube.getHeight() + tubeOffset[i], bottomTube.getWidth(), bottomTube.getHeight());
 
 			if (Intersector.overlaps(birdCircle, topTubeRectangles[i]) || Intersector.overlaps(birdCircle, bottomTubeRectangles[i])) {
 
 				gameState = 2;
-
-
-
-
-
-
-
-
 
 			}
 		}
 
 		batch.end();
 
-		//shapeRenderer.end();
+		shapeRenderer.end();
 
 
 
